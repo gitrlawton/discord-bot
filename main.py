@@ -1,9 +1,13 @@
 import discord
-import requests
+import requests, json
 import os
 
 intents = discord.Intents.all()
 client = discord.Client(intents = intents)
+
+# Load the gifs from gifs.json
+with open("gifs.json") as file:
+  links = json.load(file)
 
 @client.event
 async def on_ready():
@@ -34,5 +38,11 @@ async def on_message(message):
     await message.channel.send(position)
     await message.channel.send(team)
     await message.channel.send(weight)
+
+  # Detect names of gifs in user's comments.
+  for (category, gif) in links.items():
+    if category in message.content:
+      await message.channel.send(gif[0])
+
 
 client.run(os.environ['TOKEN'])
