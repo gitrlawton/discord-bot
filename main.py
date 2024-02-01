@@ -1,3 +1,5 @@
+import asyncio
+import datetime
 import json
 import nextcord
 import os
@@ -55,34 +57,40 @@ season_stats = season + "\n" + gamesPlayed + "\n" + minutes + "\n" + points + "\
 
 ## --------------------------EVENTS------------------------------ ##
 
+target_channel_id = os.environ['CHANNEL_ID']
+
 @bot.event
 async def on_ready():
   print("Bot is ready")
+  target_channel = bot.get_channel(int(target_channel_id))
 
-# Detect category of gifs in user's comments.
+  if target_channel:
+      # Post a message to the target channel
+      await target_channel.send("Type !help for a list of commands.")
+
 @bot.event
 async def on_message(message):
   if message.content.startswith("!"):
+    # Message is a command. Do not process it here.
     await bot.process_commands(message)
   else:
+    # Message is not a command. Check it for gif keywords.
     for (category, gif) in links.items():
       if category in message.content:
         await message.channel.send(gif[0])
 
 ## --------------------------COMMANDS----------------------------- ##
 
-@bot.command(name = "hello")
-async def SendMessage(context):
-  await context.send("!hello - Shows this message \n !playerinfo - Returns Jimmy Butler's player profile \n GIFs: [emo, cmon, take it, point, eyes, timeout, kiss, oh yeah, shots, what?] \n !playerstats - Returns Jimmy Butler's current season stats.")
 
-@bot.command(name = "playerinfo")
+
+@bot.command(name = "playerinfo", help = "Returns Jimmy Butler's player profile")
 async def PlayerInfo(context):
   await context.send(player_info)
 
-@bot.command(name = "playerstats")
+@bot.command(name = "playerstats", help = "Returns Jimmy Butler's current season stats.")
 async def PlayerStats(context):
   await context.send(season_stats)
-    
+
 ## -------------------------END COMMANDS-------------------------- ##
 
 bot.run(os.environ['TOKEN'])
