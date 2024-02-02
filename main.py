@@ -11,6 +11,12 @@ intents.message_content = True
 
 bot = commands.Bot(command_prefix = "!", intents = intents)
 
+channel_id = os.environ['CHANNEL_ID']
+
+current_time = datetime.datetime.now()
+today_date = str(current_time)[:10]
+
+
 # Load the gifs from our json file.
 with open("gifs.json") as file:
   links = json.load(file)
@@ -55,18 +61,34 @@ freeThrowPercentage = "Free Throw percentage: " + str(stats_response.json()["dat
 # Compile the formatted values into one string.
 season_stats = season + "\n" + gamesPlayed + "\n" + minutes + "\n" + points + "\n" + rebounds + "\n" + assists + "\n" + steals + "\n" + blocks + "\n" + turnovers + "\n" + fieldGoalPercentage + "\n" + threePointPercentage + "\n" + freeThrowPercentage
 
+# Call the API and store the JSON
+game_today_response = requests.get(f"https://www.balldontlie.io/api/v1/games?dates[]={today_date}&team_ids[]=16")
+
+today_game_data = game_today_response.json()["data"]
+
+if len(today_game_data) == 1:
+  if today_game_data[0]["home_team"]["id"] == 16:
+    opponent = today_game_data[0]["visitor_team"]["full_name"]
+    todays_game = "The Miami Heat are playing at home against the "     + opponent + " today."
+  else:
+    location = " at " + today_game_data[0]["home_team"]["city"]
+    opponent = today_game_data[0]["home_team"]["full_name"]
+    todays_game = "The Miami Heat are playing the " + opponent +         location + " today."
+else:
+  todays_game = "The Miami Heat do not play today."
+
 ## --------------------------EVENTS------------------------------ ##
 
-target_channel_id = os.environ['CHANNEL_ID']
 
 @bot.event
 async def on_ready():
   print("Bot is ready")
-  target_channel = bot.get_channel(int(target_channel_id))
 
-  if target_channel:
-      # Post a message to the target channel
-      await target_channel.send("Type !help for a list of commands.")
+  channel = bot.get_channel(int(channel_id))
+
+  # Let the users in chat know about the !help command.
+  await channel.send("Type !help for a list of commands.")
+  
 
 @bot.event
 async def on_message(message):
@@ -81,7 +103,9 @@ async def on_message(message):
 
 ## --------------------------COMMANDS----------------------------- ##
 
-
+@bot.command(name = "gametoday", help = "Returns if there is a Miami Heat game today.")
+async def GameToday(context):
+  await context.send(todays_game)
 
 @bot.command(name = "playerinfo", help = "Returns Jimmy Butler's player profile")
 async def PlayerInfo(context):
