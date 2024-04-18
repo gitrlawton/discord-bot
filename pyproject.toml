@@ -8,6 +8,10 @@ authors = ["Your Name <you@example.com>"]
 python = ">=3.10.0,<3.11"
 nextcord = "^2.6.0"
 requests = "^2.31.0"
+crontab = "^1.0.1"
+schedule = "^1.2.1"
+pytz = "^2024.1"
+functions = "^0.7.0"
 
 [tool.pyright]
 # https://github.com/microsoft/pyright/blob/main/docs/configuration.md
